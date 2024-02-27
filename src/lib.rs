@@ -29,27 +29,24 @@ pub fn get_args() -> MyResult<Config> {
                 .help("display lines")
                 .short('n')
                 .long("lines")
-                .default_value("true")
-                .action(ArgAction::SetFalse)
-                .conflicts_with_all(["words", "bytes", "chars"]),
+                .default_value("false")
+                .action(ArgAction::SetTrue),
         )
         .arg(
             Arg::new("words")
                 .value_name("WORDS")
                 .short('w')
                 .long("words")
-                .default_value("true")
-                .action(ArgAction::SetFalse)
-                .conflicts_with_all(["lines", "bytes", "chars"]),
+                .default_value("false")
+                .action(ArgAction::SetTrue),
         )
         .arg(
             Arg::new("bytes")
                 .value_name("BYTES")
                 .short('c')
                 .long("bytes")
-                .default_value("true")
-                .action(ArgAction::SetFalse)
-                .conflicts_with_all(["lines", "words", "chars"]),
+                .default_value("false")
+                .action(ArgAction::SetTrue),
         )
         .arg(
             Arg::new("chars")
@@ -58,7 +55,7 @@ pub fn get_args() -> MyResult<Config> {
                 .long("chars")
                 .default_value("false")
                 .action(ArgAction::SetTrue)
-                .conflicts_with_all(["lines", "words", "bytes"]),
+                .conflicts_with("bytes"),
         )
         .get_matches();
 
@@ -67,10 +64,16 @@ pub fn get_args() -> MyResult<Config> {
         .unwrap()
         .map(|v| v.to_owned())
         .collect();
-    let lines = matches.get_flag("lines");
-    let words = matches.get_flag("words");
-    let bytes = matches.get_flag("bytes");
+    let mut lines = matches.get_flag("lines");
+    let mut words = matches.get_flag("words");
+    let mut bytes = matches.get_flag("bytes");
     let chars = matches.get_flag("chars");
+
+    if [lines, words, bytes, chars].iter().all(|v| v == &false) {
+        lines = true;
+        words = true;
+        bytes = true;
+    }
 
     Ok(Config {
         files,
